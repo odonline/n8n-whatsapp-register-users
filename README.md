@@ -168,5 +168,6 @@ Mensaje → Verificar Usuario → ❌ No existe → Verificar Paso de Registro
 
 
 ### n8n
+    - Docs: https://docs.n8n.io/
     - Templates: https://n8n.io/workflows/
     - Whatsapp Templates: https://n8n.io/workflows/?integrations=WhatsApp
