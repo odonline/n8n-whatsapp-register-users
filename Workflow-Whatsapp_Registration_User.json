@@ -1,0 +1,1202 @@
+{
+  "name": "Whatsapp Registration User",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {
+          "messageStatusUpdates": [
+            "all"
+          ]
+        }
+      },
+      "id": "8db9c041-04ad-40ae-88ca-40262e3fde5b",
+      "name": "WhatsApp Message Received",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "position": [
+        -1072,
+        416
+      ],
+      "typeVersion": 1,
+      "webhookId": "d867cc69-1ba7-4efb-be08-0cdcfc1992d1",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "iOYEYAWrsR2Y6suA",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "mode": "name",
+          "value": "users"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "id",
+            "name",
+            "email",
+            "phone_number",
+            "status",
+            "registration_date"
+          ]
+        }
+      },
+      "id": "e5ab6672-15a3-4c29-ba62-8733657935ae",
+      "name": "Check User Exists",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        -624,
+        400
+      ],
+      "typeVersion": 2.4,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "leftValue": "={{ $json.isEmpty() ? 0 : 1 }}",
+                    "rightValue": 0,
+                    "id": "d09d5839-6faa-4eab-befd-9a4a4a8e6f44"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "existing_user"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c7cd5a11-4ac1-4de5-b478-0d1844c069e2",
+                    "leftValue": "={{ $json.isEmpty() ? 0 : 1 }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "new_user"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ddf7db89-3ade-4ae0-b471-2c76217ace2d",
+      "name": "User Exists?",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -432,
+        416
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('SetupJson').first().json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "=👋 ¡Hola {{ $json.name }}!\n\nYa tienes una cuenta registrada con nosotros.\n\n📧 Email: {{ $json.email }}\n📅 Registrado: {{ $json.registration_date }}\n\n¿En qué puedo ayudarte hoy?",
+        "additionalFields": {}
+      },
+      "id": "abbafc86-47ef-4e4d-bffd-133d76160219",
+      "name": "Existing User Message",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        -256,
+        240
+      ],
+      "typeVersion": 1,
+      "webhookId": "692fd138-5aea-4110-b12a-100ca0d3510b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').first().json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f08ab7a0-a869-4a64-9932-4f77a3c0b878",
+      "name": "Check Registration Step",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        -192,
+        512
+      ],
+      "typeVersion": 2.4,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.isEmpty() ? 'start' : 'name' }}",
+                    "rightValue": "start",
+                    "id": "c7ac6f17-fe8c-4db1-b9d9-815f61fd2735"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "start_registration"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.isNotEmpty() ? $json.current_step : 'start' }}",
+                    "rightValue": "name",
+                    "id": "bdf9e828-0c64-40d1-b270-8ffaaff09ccb"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "waiting_name"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.isNotEmpty() ? $json.current_step : 'start' }}",
+                    "rightValue": "email",
+                    "id": "31ed5650-5fb0-4947-89ee-3793940a4d3c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "waiting_email"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.isNotEmpty() ? $json.current_step : 'start' }}",
+                    "rightValue": "confirm",
+                    "id": "ca52c82e-9963-4c42-8358-63d5d9ce9286"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "waiting_confirmation"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "27eac099-829f-48ff-b3cb-1fdc54404204",
+      "name": "Registration Step Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        16,
+        320
+      ],
+      "typeVersion": 3.2,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "139c817a-1cf2-4927-bdaa-653e51d5eeeb",
+      "name": "Start Registration",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        208,
+        0
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('SetupJson').first().json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "¡Hola! 👋 Bienvenido al registro de nuestra plataforma.\n\nPara comenzar, por favor compárteme tu nombre completo.",
+        "additionalFields": {}
+      },
+      "id": "963a3742-3f1c-40fd-9460-d8cb6a5c18f3",
+      "name": "Ask for Name",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        384,
+        0
+      ],
+      "typeVersion": 1,
+      "webhookId": "4f262d03-f039-45e2-8078-5e3bc25beef2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "dataMode": "defineBelow",
+        "columnToMatchOn": "phone_number",
+        "valueToMatchOn": "={{ $json.phone_number }}",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "current_step",
+              "value": "email"
+            },
+            {
+              "column": "updated_at",
+              "value": "={{$now.format('yyyy-MM-dd hh:nn:ss')}}"
+            },
+            {
+              "column": "name",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a9d02fd2-4955-4425-8572-13106dfae8bb",
+      "name": "Save Name",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        208,
+        192
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "=Perfecto, {{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body }}! 📧|Ahora necesito tu dirección de correo electrónico.",
+        "additionalFields": {}
+      },
+      "id": "18d0e06a-b4ee-4bde-b64d-b504bed59014",
+      "name": "Ask for Email",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        528,
+        160
+      ],
+      "typeVersion": 1,
+      "webhookId": "48007a4e-8351-4be0-b5ad-8d60a5e015eb",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "leftValue": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body }}",
+                    "rightValue": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+                    "id": "16b6cbf7-0d83-47bd-a140-45f61f089050"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "valid_email"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "notRegex"
+                    },
+                    "leftValue": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body }}",
+                    "rightValue": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+                    "id": "03ee0a07-6f1c-4b72-89e8-17471c36cc77"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "invalid_email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1adde5a0-4f59-4638-b4de-b18896fbe2d7",
+      "name": "Validate Email",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        224,
+        400
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "dataMode": "defineBelow",
+        "columnToMatchOn": "phone_number",
+        "valueToMatchOn": "={{ $json.phone_number }}",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "current_step",
+              "value": "confirm"
+            },
+            {
+              "column": "email",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body }}"
+            },
+            {
+              "column": "updated_at",
+              "value": "={{$now.format('yyyy-MM-dd hh:nn:ss')}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0c7e6ced-95d0-4201-8cf9-953a47e5608b",
+      "name": "Save Email",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        448,
+        304
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2e0042a9-c19b-4914-9a2f-f42aab11fcdf",
+      "name": "Get Registration Data for Confirmation",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        656,
+        288
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "=Excelente! 📋 Por favor revisa tus datos:\n👤 Nombre: {{ $json.name }}\n📧 Email: {{ $json.email }}\n📱 Teléfono: {{ $json.phone_number  }}\n¿Los datos son correctos?\nResponde:✅ *SÍ* para confirmar❌ *NO* para reiniciar",
+        "additionalFields": {}
+      },
+      "id": "0c4ccf45-bd71-441e-ab85-9a1643198a10",
+      "name": "Ask for Confirmation",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        864,
+        288
+      ],
+      "typeVersion": 1,
+      "webhookId": "09f3e200-0d69-49cf-953c-27e1d6e9dd8b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "=❌ El formato del email no es válido.\n\nPor favor, ingresa un email válido (ejemplo: nombre@dominio.com)",
+        "additionalFields": {}
+      },
+      "id": "1437023b-4610-40ff-9a05-cff3fa6ab991",
+      "name": "Email Format Error",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        448,
+        432
+      ],
+      "typeVersion": 1,
+      "webhookId": "14667844-acbf-4e07-8ec2-f4e57d7d8122",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body.toLowerCase().trim() }}",
+                    "rightValue": "sí",
+                    "id": "4e43886c-881b-425f-8b10-d08d0ca520a7"
+                  },
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body.toLowerCase().trim() }}",
+                    "rightValue": "si",
+                    "id": "9c43f5c4-c407-4dac-b291-1de0f0f66856"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "confirmed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $('SetupJson').item.json.entry[0].changes[0].value.messages[0].text.body.toLowerCase().trim() }}",
+                    "rightValue": "no",
+                    "id": "cb72c148-afa8-4d4c-b27a-2ecbdc741861"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "rejected"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2d3128ce-97e6-4f02-83fb-cb367d274520",
+      "name": "Process Confirmation",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        224,
+        640
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4e13381b-0ba1-4931-b325-c966357958cd",
+      "name": "Get Registration Data",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        416,
+        608
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "mode": "name",
+          "value": "users"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "name",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "column": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "column": "phone_number",
+              "value": "={{ $json.phone_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5800052-017e-42d7-8d23-6fa9b153c1d7",
+      "name": "Create User Account",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        688,
+        576
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8ef4d5f4-0db3-461b-b720-f1064f0be1fa",
+      "name": "Cleanup Registration",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        896,
+        512
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('Get Registration Data').item.json.phone_number }}",
+        "textBody": "=🎉 ¡Registro completado exitosamente!\n\nBienvenido/a {{ $('Get Registration Data').item.json.name }} a nuestra plataforma.\n\nTus credenciales:\n👤 Usuario: {{ $('Get Registration Data').item.json.email }}\n\nYa puedes acceder a todos nuestros servicios. ¡Gracias por registrarte! 🚀",
+        "additionalFields": {}
+      },
+      "id": "1cc5da32-396c-4582-86a8-bc6a32905a60",
+      "name": "Registration Success",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1104,
+        464
+      ],
+      "typeVersion": 1,
+      "webhookId": "a558caa7-ebfd-4e68-8c5f-bb0e4800356a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2348c64e-2c70-411f-a947-5db650b1867e",
+      "name": "Restart Registration",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        416,
+        768
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "mode": "name",
+          "value": "user_registration"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "phone_number",
+              "value": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dd120305-15a3-4c38-9358-59332ef4f4a4",
+      "name": "Restart Registration Step",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        688,
+        736
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "HfkXBsXHeOTLb0uB",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "717248461467617",
+        "recipientPhoneNumber": "={{ $('SetupJson').item.json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "=🔄 Registro reiniciado.\n\nPor favor compárteme tu nombre completo para comenzar nuevamente.",
+        "additionalFields": {}
+      },
+      "id": "46ac9c93-9cfa-4795-acdf-e02f7c2437bd",
+      "name": "Restart Message",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        896,
+        704
+      ],
+      "typeVersion": 1,
+      "webhookId": "dc303cd5-b13f-437e-b3bf-58d8122d5263",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "B2TQPbAF2nvKnF6c",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1ff720fa-7ff0-4b50-98e8-98b27623caa1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1072,
+        176
+      ],
+      "id": "c440573c-767a-4e6d-ad38-78d94bbc0747",
+      "name": "Webhook",
+      "webhookId": "1ff720fa-7ff0-4b50-98e8-98b27623caa1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n \"entry\" : {{ $json.entry || $json.body.entry }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        288
+      ],
+      "id": "e1a2c38b-65a3-4b21-b84b-abd2e94d17a9",
+      "name": "SetupJson",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Save Name": {
+      "main": [
+        [
+          {
+            "node": "Ask for Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Email": {
+      "main": [
+        [
+          {
+            "node": "Get Registration Data for Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Exists?": {
+      "main": [
+        [
+          {
+            "node": "Existing User Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Registration Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Email": {
+      "main": [
+        [
+          {
+            "node": "Save Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check User Exists": {
+      "main": [
+        [
+          {
+            "node": "User Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Registration": {
+      "main": [
+        [
+          {
+            "node": "Ask for Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Registration Step": {
+      "main": [
+        [
+          {
+            "node": "Registration Step Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registration Step Switch": {
+      "main": [
+        [
+          {
+            "node": "Start Registration",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Message Received": {
+      "main": [
+        [
+          {
+            "node": "SetupJson",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Get Registration Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Restart Registration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Registration Data": {
+      "main": [
+        [
+          {
+            "node": "Create User Account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create User Account": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Registration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleanup Registration": {
+      "main": [
+        [
+          {
+            "node": "Registration Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restart Registration": {
+      "main": [
+        [
+          {
+            "node": "Restart Registration Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restart Registration Step": {
+      "main": [
+        [
+          {
+            "node": "Restart Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Registration Data for Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Ask for Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "SetupJson",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetupJson": {
+      "main": [
+        [
+          {
+            "node": "Check User Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6badc0db-03af-4c6c-968d-bc1623b89641",
+  "meta": {
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "mRZzRrDt00DlemWO",
+  "tags": []
+}
