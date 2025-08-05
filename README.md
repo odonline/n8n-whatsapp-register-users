@@ -171,3 +171,32 @@ Mensaje → Verificar Usuario → ❌ No existe → Verificar Paso de Registro
     - Docs: https://docs.n8n.io/
     - Templates: https://n8n.io/workflows/
     - Whatsapp Templates: https://n8n.io/workflows/?integrations=WhatsApp
+
+
+# Herramientas:
+
+       - n8n local con docker
+            * Repo usado: https://github.com/n8n-io/self-hosted-ai-starter-kit
+            * Se puede levantar solo n8n con docker segun la documentacion de n8n sin problemas.
+
+       - mpc: n8n-mcp ( https://www.n8n-mcp.com/ )
+            * Model Context Protocol server enabling AI assistants to build accurate n8n workflows
+
+       - ngrok: (https://ngrok.com/) 
+            * Publicar localhost a una url publica
+
+       - Claude Desktop: (https://claude.ai/download)            
+            * Configurado con el mcp de n8n-mcp
+
+
+## Prompt inicial en claude
+
+```   
+please create a n8n worflow that checks a whatsapp message chat and manage a step by step  interactive register user for a site
+```
+
+
+![alt text](image.png)
+
+Posteriormente, se fueron agregando el Webhook trigger, Setup Json para normalizar la informacion que recibiria el flow y ajustando los mensajes y nodos para que la lógica tuviera mayormente sentido asi como la lectura de la información ajustada, los insers, selects, updates a base datos y los mensajes de whatsapp que recibia el usuario.
+
